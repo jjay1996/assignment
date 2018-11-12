@@ -96,7 +96,7 @@ class AddDeleteMessage : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         val id = item!!.getItemId()
 
-        if (id == R.id.home){
+        if (id == android.R.id.home){
             finish()
         }
         return super.onOptionsItemSelected(item)

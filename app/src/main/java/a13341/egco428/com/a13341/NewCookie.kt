@@ -1,10 +1,11 @@
 package a13341.egco428.com.a13341
 
-import a13341.egco428.com.a13341.CookiePovider.getData
+import a13341.egco428.com.a13341.CookiePovider.addMeesage
 import a13341.egco428.com.a13341.DataSource.CookieDataSource
 import a13341.egco428.com.a13341.Model.Cookie
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
@@ -12,15 +13,10 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import java.util.*
 import android.hardware.SensorEventListener
-import android.util.Log
-import android.widget.ArrayAdapter
-import kotlinx.android.synthetic.main.activity_main.*
+import android.text.format.DateFormat
 import kotlinx.android.synthetic.main.activity_new_cookie.*
-import kotlinx.android.synthetic.main.add_delete_list.*
-import kotlin.collections.ArrayList
 
 
 class NewCookie : AppCompatActivity(),SensorEventListener{
@@ -35,26 +31,17 @@ class NewCookie : AppCompatActivity(),SensorEventListener{
         setContentView(R.layout.activity_new_cookie)
 
 
-        setTitle("Fortune Cookies")
+        setTitle("             Fortune Cookies")
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
+        dataSource = CookieDataSource(this)
+        dataSource!!.open()
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         //textView.setBackgroundColor(Color.GREEN)
         lastUpdate = System.currentTimeMillis()
 
-
         saveBtn.isEnabled = false
-        saveBtn.setOnClickListener {
-            val intent = Intent(this,MainActivity::class.java)
-            startActivity(intent)
-        }
-
-        var cookie:Cookie
-        val random = Random().nextInt(dataSource!!.allComments.size)
-        cookie = dataSource!!.allComments.get(random)
-        resultText.text = cookie.message.toString()
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -69,7 +56,8 @@ class NewCookie : AppCompatActivity(),SensorEventListener{
         if (id == R.id.settingBtn){
             val intent = Intent(this,AddDeleteMessage::class.java)
             startActivity(intent)
-        }else if(id == R.id.home){
+        }
+        if(id == android.R.id.home){
             finish()
         }
         return super.onOptionsItemSelected(item)
@@ -87,9 +75,6 @@ class NewCookie : AppCompatActivity(),SensorEventListener{
     }
 
     private fun getAccelerometer(event: SensorEvent?){
-        // val num : Array<IntRange> = arrayOf(10 until 99)
-        //val nextInt: Int =  Random().nextInt((90 + 1) - 10) +  10
-
         val values : FloatArray = event!!.values
         var x = values[0]
         var y = values[1]
@@ -99,16 +84,38 @@ class NewCookie : AppCompatActivity(),SensorEventListener{
         var actuaTime = System.currentTimeMillis()
         //Log.d("CHECK","$accel")
 
-       // val data = CookiePovider.getData()
+        var cookie:Cookie
+        val random = Random().nextInt(dataSource!!.allComments.size)
+
+        var timestamp = System.currentTimeMillis()/1000
+        //var time = DateFormat.format("dd-MM-yyyy hh:mm:ss", timestamp*1000).toString()
+        var time = DateFormat.format("dd-MM-yyyy hh:mm", timestamp*1000).toString()
 
         if(accel>=2){
             if(actuaTime-lastUpdate<200){
-
+                cookie = dataSource!!.allComments.get(random)
 
                 imageView.setImageResource(R.drawable.opened_cookie)
 
+                if(cookie.type == "Positive"){
+                    resultText.setTextColor(Color.BLUE)
+                }else if(cookie.type == "Negative"){
+                    resultText.setTextColor(Color.RED)
+                }
+                resultText.text = cookie.message.toString()
+                centernewText.text = cookie.message.toString()
+                dateText.text = time
+
+                var messageM = cookie.message.toString()
+                var typeM = cookie.type.toString()
 
                 saveBtn.isEnabled = true
+                saveBtn.setOnClickListener {
+                    addMeesage(messageM,typeM,time)
+                    val intent = Intent(this,MainActivity::class.java)
+                    startActivity(intent)
+                }
+
                 return
             }
             lastUpdate = actuaTime
